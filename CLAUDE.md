@@ -17,7 +17,7 @@ This document provides context and guidelines for AI assistants working on this 
 
 ## Project Structure
 
-```
+```text
 /
 ├── README.md                       # Project introduction and navigation
 ├── PLAN.md                         # Overview with platform comparison
@@ -25,6 +25,18 @@ This document provides context and guidelines for AI assistants working on this 
 ├── PLAN_UBUNTU.md                  # Ubuntu/Linux VPS deployment
 ├── SKILL_VETTING_GUIDE.md         # (Draft) Comprehensive skill review process
 ├── PROJECT_STATUS.md              # (Draft) Current state and decisions
+│
+├── docs/                           # Detailed guidelines for contributors
+│   ├── working-with-project.md     # Workflows for updates and reviews
+│   ├── common-tasks.md             # Step-by-step task instructions
+│   ├── code-style.md               # Coding standards (Bash, JS, JSON)
+│   ├── testing.md                  # Pre-commit checklists
+│   ├── git-workflow.md             # Commit format and branching
+│   ├── openclaw-context.md         # OpenClaw-specific guidance
+│   ├── external-references.md      # Quick links to external docs
+│   ├── troubleshooting.md          # Common problem solutions
+│   ├── project-principles.md       # Core values and principles
+│   └── questions-guide.md          # Quick decision guide
 │
 ├── skills/                         # Skills directory (vetted and pending)
 │   ├── README.md                   # Skills management guide
@@ -58,7 +70,8 @@ This document provides context and guidelines for AI assistants working on this 
 ### 1. Second Brain Architecture
 
 The system follows this flow:
-```
+
+```text
 Messages (Telegram/WhatsApp/etc.)
     ↓
 OpenClaw Gateway (localhost-only)
@@ -79,6 +92,7 @@ Automated Email Digests (2x daily + weekly)
 ### 3. Security-First Approach
 
 All third-party skills must be:
+
 - Source code reviewed
 - Dependency analyzed
 - Network behavior verified
@@ -87,6 +101,7 @@ All third-party skills must be:
 ### 4. YouTube Skill Options
 
 Two vetted options:
+
 - **youtube-direct** (recommended): Custom-built, uses official Google API, no third parties
 - **youtube-full** (alternative): TranscriptAPI service, simpler setup, cloud-friendly
 
@@ -97,7 +112,7 @@ Two vetted options:
 ### Markdown Style
 
 1. **Headings**: Use ATX-style (`#` headers)
-2. **Code blocks**: Always specify language (```bash, ```javascript, ```json)
+2. **Code blocks**: Always specify language (```bash,```javascript, ```json)
 3. **Tables**: Use standard markdown tables with aligned columns
 4. **Links**: Use relative links for internal docs, absolute for external
 5. **Emojis**: Use sparingly for visual navigation (🍎, 🐧, ⭐, ✅, ⚠️)
@@ -107,6 +122,7 @@ Two vetted options:
 #### Deployment Guides (PLAN_*.md)
 
 Standard sections:
+
 1. Overview
 2. Architecture
 3. Prerequisites
@@ -119,6 +135,7 @@ Standard sections:
 #### Skill Documentation
 
 Each skill should have:
+
 - **README.md**: Setup, usage, troubleshooting
 - **SKILL.md**: OpenClaw-specific skill definition
 - **Security review document**: If third-party
@@ -126,12 +143,14 @@ Each skill should have:
 ### Command Examples
 
 Always include:
+
 - Clear descriptions of what commands do
 - Expected output samples
 - Error handling guidance
 - Platform-specific variations when applicable
 
 Example format:
+
 ```bash
 # Install dependencies
 npm install
@@ -144,290 +163,43 @@ npm install
 
 ## Working with This Project
 
-### When Updating Deployment Plans
-
-1. **Update ALL affected files**: If a change applies to both platforms, update both PLAN_MACOS.md and PLAN_UBUNTU.md
-2. **Keep PLAN.md in sync**: Update the overview if adding major features
-3. **Check cross-references**: Ensure all links between documents remain valid
-4. **Update PROJECT_STATUS.md**: Reflect current state and decisions
-
-### When Adding New Skills
-
-1. **Place in pending-review/** initially
-2. **Create security review document**: See `skills/pending-review/YOUTUBE_SKILLS_SECURITY_REVIEW.md` as template
-3. **Document in SKILL_COMPARISON.md**: Add comparison with alternatives
-4. **After vetting, move to vetted/**: Update references in deployment plans
-
-### When Reviewing Third-Party Skills
-
-Follow this process:
-1. Clone skill repository to `skills/pending-review/[skill-name]/`
-2. Create security review document
-3. Check for:
-   - Dangerous code patterns (dynamic code execution, shell injection)
-   - Hardcoded secrets
-   - Unexpected network calls
-   - Supply chain risks (npm audit)
-4. Document findings and recommendation
-5. If approved, update deployment plans with installation instructions
-
-### Security Review Requirements
-
-**Critical checks**:
-- [ ] No dynamic code execution with external data
-- [ ] No hardcoded API keys or secrets
-- [ ] Network calls only to documented endpoints
-- [ ] Input validation present
-- [ ] Dependencies scanned (npm audit)
-- [ ] VirusTotal scan if binary/compiled code
-
-**Red flags**:
-- Obfuscated code
-- Cryptocurrency mining
-- Undocumented network requests
-- Excessive permissions
-- Supply chain concerns
-
----
+See [docs/working-with-project.md](./docs/working-with-project.md) for detailed guidance on updating deployment plans, adding new skills, conducting security reviews, and understanding security review requirements.
 
 ## Common Tasks
 
-### Add a New Platform-Specific Tip
-
-1. Identify which guide(s) need the tip
-2. Find appropriate section (usually troubleshooting or platform-specific tips)
-3. Add with clear heading and example
-4. Update table of contents if section is new
-
-### Update Container Runtime Recommendations
-
-1. Edit PLAN_MACOS.md section 4.4 (container runtime options)
-2. Update pros/cons in the comparison table
-3. Verify recommendation still matches in PLAN.md overview
-4. Update PROJECT_STATUS.md decision matrix
-
-### Add New Skill Vetting Process Step
-
-1. Update SKILL_VETTING_GUIDE.md with new step
-2. Apply to existing reviews in skills/pending-review/
-3. Document rationale in PROJECT_STATUS.md
-
-### Fix Broken Links
-
-1. Search for the old link pattern: `grep -r "old-link" *.md`
-2. Update in all locations
-3. Test with markdown preview or link checker
-4. Commit with clear message about link update
-
----
+See [docs/common-tasks.md](./docs/common-tasks.md) for step-by-step instructions for frequent operations like adding platform-specific tips, updating container runtime recommendations, adding skill vetting process steps, and fixing broken links.
 
 ## Code Style Guidelines
 
-### Shell Scripts (Bash)
-
-```bash
-# Use clear variable names
-BACKUP_DIR="/path/to/backup"
-
-# Quote variables to handle spaces
-cd "$BACKUP_DIR"
-
-# Use functions for reusability
-function backup_config() {
-    local config_file="$1"
-    tar czf "backup-$(date +%F).tar.gz" "$config_file"
-}
-
-# Error handling
-if [ ! -d "$BACKUP_DIR" ]; then
-    echo "Error: Backup directory not found" >&2
-    exit 1
-fi
-```
-
-### JavaScript (Node.js Skills)
-
-```javascript
-// Use modern async/await
-async function fetchTranscript(videoId) {
-    try {
-        const response = await api.getTranscript(videoId);
-        return response.data;
-    } catch (error) {
-        throw new Error(`Failed to fetch transcript: ${error.message}`);
-    }
-}
-
-// Validate input
-function validateVideoId(id) {
-    if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) {
-        throw new Error('Invalid video ID format');
-    }
-    return id;
-}
-
-// Use descriptive error messages
-if (!apiKey) {
-    throw new Error('YouTube API key not found. Set YOUTUBE_API_KEY environment variable.');
-}
-```
-
-### Configuration Files (JSON)
-
-```json
-{
-    "skill_name": "youtube-direct",
-    "version": "1.0.0",
-    "description": "Brief, clear description",
-    "dependencies": {
-        "googleapis": "^140.0.0"
-    }
-}
-```
-
----
+See [docs/code-style.md](./docs/code-style.md) for coding standards covering shell scripts (Bash), JavaScript (Node.js skills), and configuration files (JSON).
 
 ## Testing Changes
 
-### Before Committing Documentation
-
-1. **Spellcheck**: Run through a spellchecker
-2. **Link check**: Verify all relative links work
-3. **Code examples**: Test commands in relevant environment
-4. **Markdown rendering**: Preview in GitHub-compatible renderer
-5. **Cross-references**: Check related documents are consistent
-
-### Before Committing Code (Skills)
-
-1. **Syntax check**: `node --check script.js`
-2. **Dependency audit**: `npm audit`
-3. **Local test**: Run in isolated environment
-4. **Documentation**: Ensure README reflects changes
-
----
+See [docs/testing.md](./docs/testing.md) for pre-commit checklists to ensure quality before committing documentation and code changes.
 
 ## Git Workflow
 
-### Commit Message Format
-
-```
-Brief summary line (50 chars max)
-
-- Bullet point for each major change
-- Be specific about files and sections affected
-- Include context for why, not just what
-
-Co-Authored-By: Claude Sonnet 4.5 (1M context) <noreply@anthropic.com>
-```
-
-### When to Create Branches
-
-This is primarily a documentation project, so main branch commits are acceptable for:
-- Documentation updates
-- Security reviews
-- Skill additions to pending-review/
-
-Consider branches for:
-- Major restructuring
-- Experimental skill implementations
-- Large-scale content rewrites
-
----
+See [docs/git-workflow.md](./docs/git-workflow.md) for commit message format guidelines and branching strategy for this project.
 
 ## OpenClaw-Specific Context
 
-### Skill Format
-
-OpenClaw skills use the Agent Skills format:
-- **SKILL.md**: Main skill documentation with frontmatter
-- **scripts/**: Executable scripts called by the agent
-- **user-invocable: true**: Skill can be triggered directly by users
-
-### Gateway Configuration
-
-- Always bind to `127.0.0.1` (localhost only)
-- Never expose to public internet without explicit user choice
-- Remote access via Tailscale or SSH tunnel only
-
-### Security Model
-
-Defense in depth:
-1. Network isolation (localhost binding)
-2. Container isolation (read-only filesystems)
-3. Skill vetting (source code review)
-4. Secret management (keychain/pass)
-5. Content sandboxing (untrusted external content)
-
----
+See [docs/openclaw-context.md](./docs/openclaw-context.md) for details on OpenClaw's skill format, gateway configuration requirements, and security model principles.
 
 ## External References
 
-### OpenClaw Documentation
-
-- [Official Docs](https://docs.openclaw.ai)
-- [GitHub Repository](https://github.com/openclaw/openclaw)
-- [Security Guide](https://docs.openclaw.ai/gateway/security)
-- [ClawHub Skills](https://clawhub.ai)
-
-### YouTube API
-
-- [YouTube Data API v3](https://developers.google.com/youtube/v3)
-- [Google Cloud Console](https://console.cloud.google.com/)
-- [API Quotas](https://developers.google.com/youtube/v3/getting-started#quota)
-
-### Container Runtimes
-
-- [OrbStack](https://orbstack.dev) - macOS recommended
-- [Docker Desktop](https://docker.com) - Cross-platform
-- [Podman](https://podman.io) - Rootless, security-focused
-
----
+See [docs/external-references.md](./docs/external-references.md) for quick links to OpenClaw documentation, YouTube API resources, and container runtime information.
 
 ## Troubleshooting Common Issues
 
-### "Skills section not updating"
-
-- Check if both PLAN_MACOS.md and PLAN_UBUNTU.md were updated
-- Verify section numbers match across files
-- Search for skill name across all files to catch references
-
-### "Link not working"
-
-- Use relative links: `./PLAN_MACOS.md` not `/PLAN_MACOS.md`
-- GitHub flavored markdown: `[Link Text](./file.md)` not `[Link Text](file.md)`
-- Test links in GitHub preview
-
-### "Code example fails"
-
-- Test in relevant platform (macOS vs Ubuntu)
-- Check environment variables are documented
-- Verify paths are correct for platform
-- Escape special characters properly
-
----
+See [docs/troubleshooting.md](./docs/troubleshooting.md) for solutions to common problems like skills section not updating, broken links, and code examples that fail.
 
 ## Project Principles
 
-1. **Security First**: Vet all third-party code, default to paranoid
-2. **Privacy Focused**: Prefer direct APIs over third-party services
-3. **User Empowerment**: Give users choice with clear trade-offs
-4. **Documentation Quality**: Clear, tested, maintainable instructions
-5. **Platform-Specific**: Don't assume one size fits all
-6. **Open & Transparent**: Document security reviews, share findings
-
----
+See [docs/project-principles.md](./docs/project-principles.md) for the core values guiding this project: Security First, Privacy Focused, User Empowerment, Documentation Quality, Platform-Specific approach, and Open & Transparent practices.
 
 ## Questions? Unsure?
 
-When working on this project:
-
-- **Security concern?** → Default to more secure option, document trade-offs
-- **Platform difference?** → Check both PLAN_MACOS.md and PLAN_UBUNTU.md
-- **Third-party skill?** → Review code first, document findings
-- **Breaking change?** → Update all affected files, test examples
-- **Unclear instruction?** → Clarify in documentation, don't assume
-
-This is a living document. Update it as patterns emerge and the project evolves.
+See [docs/questions-guide.md](./docs/questions-guide.md) for a quick decision guide to help navigate common scenarios when working on this project.
 
 ---
 

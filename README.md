@@ -62,6 +62,17 @@ Choose your deployment platform:
 ├── PLAN_MACOS.md              # macOS deployment (M1/M2/M3)
 ├── PLAN_UBUNTU.md             # Ubuntu/Linux deployment
 ├── SKILL_VETTING_GUIDE.md     # How to review skills
+├── docs/                      # Detailed contributor guidelines
+│   ├── working-with-project.md
+│   ├── common-tasks.md
+│   ├── code-style.md
+│   ├── testing.md
+│   ├── git-workflow.md
+│   ├── openclaw-context.md
+│   ├── external-references.md
+│   ├── troubleshooting.md
+│   ├── project-principles.md
+│   └── questions-guide.md
 ├── skills/
 │   ├── SKILL_COMPARISON.md    # YouTube skill options
 │   ├── vetted/
