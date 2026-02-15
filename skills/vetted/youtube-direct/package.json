@@ -1,0 +1,26 @@
+{
+  "name": "@openclaw/youtube-direct",
+  "version": "1.0.0",
+  "description": "Direct YouTube Data API v3 integration for OpenClaw",
+  "main": "index.js",
+  "scripts": {
+    "test": "node scripts/test-connection.js",
+    "setup": "node scripts/setup-auth.js"
+  },
+  "keywords": [
+    "youtube",
+    "openclaw",
+    "transcript",
+    "captions",
+    "youtube-api"
+  ],
+  "author": "OpenClaw Second Brain",
+  "license": "MIT",
+  "dependencies": {
+    "googleapis": "^140.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

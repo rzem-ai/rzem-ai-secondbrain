@@ -1,6 +1,6 @@
-# rzem-ai-secondbrain
+# OpenClaw "Second Brain"
 
-An AI-powered "Second Brain" built on [OpenClaw](https://github.com/openclaw/openclaw), securely self-hosted on Ubuntu.
+An AI-powered personal knowledge management system built on [OpenClaw](https://github.com/openclaw/openclaw). Deployable on macOS or Ubuntu/Linux with comprehensive security and privacy controls.
 
 ## What It Does
 
@@ -41,7 +41,35 @@ The system is designed with security as a priority:
 
 ## Getting Started
 
-See [PLAN.md](PLAN.md) for the full implementation plan covering installation, configuration, and operational maintenance.
+Choose your deployment platform:
+
+- **🍎 [macOS Deployment](./PLAN_MACOS.md)** - Optimized for Apple Silicon Macs (M1/M2/M3)
+  - Best for: Personal use, privacy-first, laptop battery efficiency
+  - Container: OrbStack (lightweight, native optimization)
+  - Setup time: ~2-3 hours
+
+- **🐧 [Ubuntu/Linux Deployment](./PLAN_UBUNTU.md)** - For VPS/cloud hosting
+  - Best for: Always-on deployments, remote access, team usage
+  - Container: Rootless Podman (maximum security)
+  - Setup time: ~3-4 hours
+
+**Start here**: [PLAN.md](./PLAN.md) - Overview and platform comparison
+
+## Project Structure
+
+```
+├── PLAN.md                    # Overview and platform guide
+├── PLAN_MACOS.md              # macOS deployment (M1/M2/M3)
+├── PLAN_UBUNTU.md             # Ubuntu/Linux deployment
+├── SKILL_VETTING_GUIDE.md     # How to review skills
+├── skills/
+│   ├── SKILL_COMPARISON.md    # YouTube skill options
+│   ├── vetted/
+│   │   └── youtube-direct/    # Custom YouTube API skill
+│   └── pending-review/
+│       └── youtube-summarizer/ # TranscriptAPI alternative
+└── PROJECT_STATUS.md          # Current progress and decisions
+```
 
 ## License
 

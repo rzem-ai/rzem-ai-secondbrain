@@ -132,7 +132,7 @@ nvm alias default 22
 
 ### 4.4 Install container runtime
 
-**Option 1: OrbStack (Recommended for M3 Macs)**
+#### Option 1: OrbStack (Recommended for M3 Macs)
 
 ```bash
 # Download and install OrbStack from https://orbstack.dev
@@ -146,7 +146,27 @@ docker --version
 docker ps
 ```
 
-**Option 2: Docker Desktop**
+**Description**: OrbStack is a modern Docker Desktop alternative specifically optimized for Apple Silicon. It provides a lightweight, fast container runtime with seamless Docker CLI compatibility.
+
+**Pros**:
+
+- ⚡ **Native Apple Silicon optimization** — built specifically for M-series chips
+- 🔋 **Excellent battery efficiency** — uses 50-70% less power than Docker Desktop
+- 🚀 **Fast startup** — launches in seconds vs. minutes for Docker Desktop
+- 💾 **Small footprint** — ~500MB vs. 3GB+ for Docker Desktop
+- 🎯 **Full Docker compatibility** — drop-in replacement, same CLI commands
+- 🖥️ **Clean menu bar interface** — minimal UI, gets out of your way
+- 🆓 **Free for personal use** — no licensing concerns
+
+**Cons**:
+
+- 🆕 **Newer tool** — smaller community compared to Docker Desktop
+- 🔧 **Limited enterprise features** — missing some advanced Docker Desktop features
+- 📱 **macOS only** — not portable to Windows/Linux workflows
+
+---
+
+#### Option 2: Docker Desktop
 
 ```bash
 # Download Docker Desktop for Apple Silicon from https://www.docker.com/products/docker-desktop
@@ -160,7 +180,28 @@ docker --version
 docker ps
 ```
 
-**Option 3: Podman (for rootless containers)**
+**Description**: Docker Desktop is the official, industry-standard containerization platform from Docker Inc. It provides a comprehensive suite of tools including Docker Engine, Docker CLI, Docker Compose, and Kubernetes.
+
+**Pros**:
+
+- 🏢 **Industry standard** — most documentation and tutorials assume Docker Desktop
+- 🌍 **Largest community** — extensive support, Stack Overflow answers, tutorials
+- 🧩 **Feature-rich** — includes Kubernetes, Docker Compose, extensions marketplace
+- 🔄 **Cross-platform** — skills transfer to Windows/Linux environments
+- 🛡️ **Enterprise support** — official commercial support available
+- 📦 **Extension ecosystem** — rich marketplace of extensions and integrations
+
+**Cons**:
+
+- 🐌 **Heavy resource usage** — 3-4GB RAM baseline, high CPU usage
+- 🔋 **Poor battery life** — significantly drains battery on laptops
+- ⏱️ **Slow startup** — can take 1-2 minutes to fully initialize
+- 💰 **Commercial licensing** — requires paid license for large organizations (250+ employees or $10M+ revenue)
+- 🎨 **Cluttered UI** — feature-heavy interface can be overwhelming
+
+---
+
+#### Option 3: Podman (for rootless containers)
 
 ```bash
 # Install Podman
@@ -174,10 +215,32 @@ podman machine start
 podman info | grep rootless
 ```
 
+**Description**: Podman is a daemon-less, rootless container engine developed by Red Hat. It's designed as a more secure Docker alternative that doesn't require elevated privileges.
+
+**Pros**:
+
+- 🔒 **Rootless by default** — runs without root privileges, better security isolation
+- 🚫 **No daemon** — no background service consuming resources when idle
+- 🆓 **Fully open source** — Apache 2.0 license, no commercial restrictions
+- 🔄 **Docker-compatible CLI** — mostly drop-in replacement (alias docker=podman)
+- 🎯 **Podman Compose** — alternative to Docker Compose included
+- 🏢 **Enterprise-proven** — widely used in RHEL/CentOS environments
+
+**Cons**:
+
+- 🖥️ **Requires VM on macOS** — not native, needs virtualization layer
+- 🐛 **Compatibility issues** — some Docker features don't work identically
+- 📚 **Smaller ecosystem** — fewer tutorials, less community support
+- ⚙️ **More complex setup** — requires machine initialization and management
+- 🔧 **Manual networking** — some networking scenarios require more configuration
+
+---
+
 > **Container Runtime Comparison for M3**:
-> - **OrbStack**: Lightest, fastest, best battery life, native Apple Silicon optimization
-> - **Docker Desktop**: Industry standard, most compatible, but heavier resource usage
-> - **Podman**: Rootless by default, most secure, but requires VM on macOS
+>
+> - **OrbStack**: Lightest, fastest, best battery life, native Apple Silicon optimization — **Best for personal use on M3 Macs**
+> - **Docker Desktop**: Industry standard, most compatible, but heavier resource usage — **Best for teams requiring standardization**
+> - **Podman**: Rootless by default, most secure, but requires VM on macOS — **Best for security-focused deployments**
 
 ---
 
@@ -200,6 +263,7 @@ openclaw setup
 ```
 
 The wizard will prompt for:
+
 - LLM provider + API key (recommend Anthropic Claude)
 - Messaging channel connections (choose your primary channel — e.g. Telegram or WhatsApp)
 - Gateway binding (ensure it binds to `127.0.0.1` only)
@@ -228,12 +292,14 @@ lsof -iTCP -sTCP:LISTEN -n -P | grep openclaw
 Since this is a local Macbook, you typically don't need remote access. However, if you want to access from other devices on your local network:
 
 - **Tailscale** (recommended for secure mesh network access)
+
   ```bash
   brew install tailscale
   sudo tailscale up
   ```
 
 - **SSH tunnel** (if SSH is enabled)
+
   ```bash
   ssh -L 3000:127.0.0.1:3000 yourusername@your-macbook.local
   ```
@@ -281,6 +347,7 @@ podman run -d \
 ```
 
 Key flags:
+
 - `--memory 8g` — 8GB limit (adjust based on your needs; with 128GB RAM you have plenty)
 - `--cpus 2` — limit CPU cores to prevent runaway processes
 - `--read-only` + `--tmpfs /tmp` — immutable filesystem except designated volume
@@ -294,6 +361,7 @@ Key flags:
 > **Post-ClawHavoc rule**: Never install a ClawHub skill without reviewing the source code first.
 
 For every skill:
+
 1. Read the source code
 2. Check author reputation and GitHub stars/issues
 3. Run a VirusTotal scan on the package
@@ -326,6 +394,7 @@ op signin
 ```
 
 Best practices:
+
 - Never store secrets in `.env` files long-term
 - Rotate API keys monthly
 - Use environment variables loaded from secure storage
@@ -381,10 +450,49 @@ Message received
 
 ### 7.2 Install required skills
 
-```bash
-# YouTube transcript extraction & summarisation
-npx clawhub@latest install youtube-summarizer
+#### YouTube Transcripts (Recommended: youtube-direct)
 
+After security review of third-party options, we recommend using the direct YouTube API integration:
+
+```bash
+# Install youtube-direct skill (official Google API)
+cd /Users/alex/Dev/Work/ai/rzem-ai-secondbrain/skills/vetted/youtube-direct
+npm install
+
+# Setup Google Cloud OAuth (one-time, ~15 minutes)
+# 1. Create Google Cloud project at https://console.cloud.google.com/
+# 2. Enable YouTube Data API v3
+# 3. Create OAuth credentials (Desktop app)
+# 4. Download client_secret.json
+
+# Authenticate
+node scripts/setup-auth.js --credentials ~/Downloads/client_secret_*.json
+
+# Test the setup
+npm test
+
+# Copy to OpenClaw skills directory
+cp -r . ~/.openclaw/skills/youtube-direct/
+```
+
+**Why youtube-direct over third-party services?**
+- ✅ **Privacy**: Direct Google API, no third-party data sharing
+- ✅ **Cost**: Free (10,000 API units/day ≈ 50 transcripts)
+- ✅ **Security**: Single dependency (official googleapis package)
+- ✅ **Control**: Full YouTube API access
+
+**Alternative**: If you prefer simpler setup (5 min vs 15 min) or need cloud/VPS support, use TranscriptAPI:
+```bash
+# Alternative: youtube-full (TranscriptAPI service)
+npx clawhub@latest install youtube-full
+# Follow prompts for email registration
+```
+
+> **Security Review**: Both options have been vetted. TranscriptAPI was flagged by VirusTotal but review confirmed false positives. See `skills/YOUTUBE_SKILLS_SECURITY_REVIEW.md` and `skills/SKILL_COMPARISON.md` for details.
+
+#### Other Required Skills
+
+```bash
 # General URL/content summarisation
 npx clawhub@latest install summarize
 
@@ -393,8 +501,6 @@ npx clawhub@latest install gmail
 # OR for broader Google integration:
 npx clawhub@latest install gog
 ```
-
-> **Note on YouTube**: Residential IP addresses (like your home Macbook) typically work fine with YouTube. No proxy needed unless you're using a VPN that gets blocked.
 
 ### 7.3 Configure the Second Brain identity
 
@@ -747,9 +853,12 @@ docker ps --filter "name=openclaw" --format "{{.Status}}"
 
 | Skill | Purpose | Install Command |
 |---|---|---|
-| `youtube-summarizer` | Extract YouTube transcripts + summarise | `npx clawhub@latest install youtube-summarizer` |
+| `youtube-direct` ⭐ | YouTube transcripts via official Google API (recommended) | See section 7.2 for setup |
+| `youtube-full` | Alternative: YouTube via TranscriptAPI service | `npx clawhub@latest install youtube-full` |
 | `summarize` | Summarise URLs, articles, local files | `npx clawhub@latest install summarize` |
 | `gog` (or `gmail`) | Gmail read + send for digest emails | `npx clawhub@latest install gog` |
+
+**Note**: Only install ONE YouTube skill (youtube-direct recommended). See `skills/SKILL_COMPARISON.md` for detailed comparison.
 
 ---
 
@@ -775,6 +884,7 @@ docker ps --filter "name=openclaw" --format "{{.Status}}"
 ### 14.1 Leverage 128GB RAM
 
 With 128GB of RAM, you can:
+
 - Allocate 32GB+ to OpenClaw container for processing very large video transcripts
 - Run multiple AI models locally (e.g., Ollama for offline LLM fallback)
 - Keep Obsidian, OpenClaw, and multiple browser tabs open simultaneously
@@ -805,6 +915,7 @@ docker run -d \
 ### 14.3 Battery optimization
 
 If running OpenClaw on battery:
+
 - Use OrbStack instead of Docker Desktop (lighter on battery)
 - Adjust cron schedules to run when plugged in
 - Use macOS Low Power Mode when on battery
@@ -812,12 +923,14 @@ If running OpenClaw on battery:
 ### 14.4 Integration with macOS features
 
 **Shortcuts app integration:**
+
 ```bash
 # Create a Shortcut to start/stop OpenClaw
 # Open Shortcuts app → New Shortcut → Run Shell Script
 ```
 
 **Raycast/Alfred integration:**
+
 ```bash
 # Create custom Raycast commands for:
 # - Start OpenClaw
@@ -826,6 +939,7 @@ If running OpenClaw on battery:
 ```
 
 **Menu bar status:**
+
 ```bash
 brew install --cask swiftbar
 # Create a plugin to show OpenClaw status in menu bar
@@ -835,16 +949,28 @@ brew install --cask swiftbar
 
 ## 15. References
 
+### OpenClaw & Security
 - [OpenClaw GitHub Repository](https://github.com/openclaw/openclaw)
 - [OpenClaw Official Documentation — Security](https://docs.openclaw.ai/gateway/security)
 - [OpenClaw Cron Jobs Documentation](https://docs.openclaw.ai/automation/cron-jobs)
 - [3-Tier Security Hardening Guide](https://aimaker.substack.com/p/openclaw-security-hardening-guide)
+- [Skill Security Vetting Guide](./SKILL_VETTING_GUIDE.md) (local)
+
+### YouTube Skills
+- [YouTube Direct Skill](./skills/vetted/youtube-direct/README.md) (recommended - local)
+- [YouTube Skills Security Review](./skills/pending-review/YOUTUBE_SKILLS_SECURITY_REVIEW.md) (local)
+- [Skill Comparison Guide](./skills/SKILL_COMPARISON.md) (local)
+- [YouTube Skills (TranscriptAPI)](https://github.com/ZeroPointRepo/youtube-skills)
+- [YouTube Data API v3 Documentation](https://developers.google.com/youtube/v3)
+
+### macOS & Deployment
 - [Homebrew Official Site](https://brew.sh)
 - [OrbStack Documentation](https://docs.orbstack.dev)
 - [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
 - [Podman for macOS](https://podman.io/getting-started/installation)
 - [macOS LaunchAgent Documentation](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
-- [YouTube Skills (TranscriptAPI)](https://github.com/ZeroPointRepo/youtube-skills)
+
+### Email & Automation
 - [Email Automation Tutorial](https://openclaw-ai.online/tutorials/use-cases/email-management/)
 - [OpenClaw Cron Deep Dive](https://zenvanriel.nl/ai-engineer-blog/openclaw-cron-jobs-proactive-ai-guide/)
 
@@ -860,7 +986,13 @@ openclaw setup
 openclaw start
 
 # Install core skills
-npx clawhub@latest install youtube-summarizer
+# YouTube transcripts (recommended: youtube-direct)
+cd ~/Dev/Work/ai/rzem-ai-secondbrain/skills/vetted/youtube-direct
+npm install
+node scripts/setup-auth.js --credentials ~/Downloads/client_secret_*.json
+cp -r . ~/.openclaw/skills/youtube-direct/
+
+# Other skills
 npx clawhub@latest install summarize
 npx clawhub@latest install gog
 
