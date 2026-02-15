@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git)",
+      "Bash(/Users/alex/Dev/Work/ai/rzem-ai-secondbrain/CLAUDE.md:*)"
+    ]
+  }
+}
