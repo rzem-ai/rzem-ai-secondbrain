@@ -9,34 +9,36 @@ This plan describes how to securely install and configure [OpenClaw](https://git
 ## 2. Architecture at a Glance
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Messaging Channels                      │
-│  (WhatsApp / Telegram / Slack / Signal / Discord / etc.)    │
-└──────────────────────────┬──────────────────────────────────┘
+┌──────────────────────────┴───────────────────────────────────┐
+│                      Messaging Channels                      │
+│   (WhatsApp / Telegram / Slack / Signal / Discord / etc.)    │
+└──────────────────────────────────────────────────────────────┘
                            │ incoming messages
                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   OpenClaw Gateway                          │
-│  (bound to 127.0.0.1, behind reverse proxy + TLS)          │
-│                                                             │
-│  ┌───────────────┐  ┌──────────────┐  ┌──────────────────┐ │
-│  │ Message Router │→ │ Content      │→ │ Categorisation   │ │
-│  │ & Ingest       │  │ Extractor    │  │ & Record Store   │ │
-│  └───────────────┘  └──────────────┘  └──────────────────┘ │
-│         │                   │                    │          │
-│         │           ┌──────┴───────┐    ┌───────┴────────┐ │
-│         │           │ Link Reader  │    │ Memory / Notes │ │
-│         │           │ (articles,   │    │ (~/.openclaw/  │ │
-│         │           │  YT transcr.)│    │   memory/)     │ │
-│         │           └──────────────┘    └────────────────┘ │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │                  Cron Scheduler                       │  │
-│  │  • 08:00 — Morning summary email                     │  │
-│  │  • 20:00 — Evening summary email                     │  │
-│  │  • Sunday 09:00 — Weekly digest email                │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────┴───────────────────────────────────┐
+│                   OpenClaw Gateway                           │
+│  (bound to 127.0.0.1, behind reverse proxy + TLS)            │
+│                                                              │
+│  ┌────────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │ Message Router │→ │ Content      │→ │ Categorisation   │  │
+│  │ & Ingest       │  │ Extractor    │  │ & Record Store   │  │
+│  └────────────────┘  └──────────────┘  └──────────────────┘  │
+│         │                   │                    │           │
+│         │                   ▼                    ▼           │
+│         │            ┌──────┴───────┐  ┌─────────┴────────┐  │
+│         │            │ Link Reader  │  │ Memory / Notes   │  │
+│         │            │ (articles,   │  │ (~/.openclaw/    │  │
+│         │            │  YT transcr.)│  │   memory/)       │  │
+│         │            └──────────────┘  └──────────────────┘  │
+│         │                   │                    │           │
+│         │                   ▼                    ▼           │
+│  ┌──────┴───────────────────┴────────────────────┴────────┐  │
+│  │                  Cron Scheduler                        │  │
+│  │  • 08:00 — Morning summary email                       │  │
+│  │  • 20:00 — Evening summary email                       │  │
+│  │  • Sunday 09:00 — Weekly digest email                  │  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
