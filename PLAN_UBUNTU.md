@@ -111,17 +111,27 @@ podman info | grep rootless
 # Switch to the openclaw user
 sudo su - openclaw
 
+# Configure npm to use a user-owned directory for global packages
+# (avoids EACCES permission errors without needing sudo)
+mkdir -p ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
 npm install -g openclaw@latest
 openclaw --version
 ```
 
+> ⚠️ **Do not use `sudo npm install -g`** — it creates root-owned files that cause cascading permission issues. The prefix configuration above is npm's recommended approach.
+
 ### 5.2 Run the setup wizard
 
 ```bash
-openclaw setup
+openclaw setup --wizard
 ```
 
 The wizard will prompt for:
+
 - LLM provider + API key
 - Messaging channel connections (choose your primary channel — e.g. Telegram or WhatsApp)
 - Gateway binding (ensure it binds to `127.0.0.1` only)
@@ -144,6 +154,7 @@ ss -tlnp | grep openclaw
 ### 5.5 Remote access (only if needed)
 
 Do **not** expose the gateway port. Use one of:
+
 - **Tailscale** (recommended) — zero-config mesh VPN
 - **SSH tunnel** — `ssh -L 3000:127.0.0.1:3000 user@server`
 
@@ -169,6 +180,7 @@ podman run -d \
 ```
 
 Key flags:
+
 - `--memory 2g` / `--pids-limit 256` — prevent runaway processes
 - `--read-only` + `--tmpfs /tmp` — immutable filesystem except designated volume
 - `-p 127.0.0.1:3000:3000` — bind to loopback only
@@ -179,6 +191,7 @@ Key flags:
 > **Post-ClawHavoc rule**: Never install a ClawHub skill without reviewing the source code first.
 
 For every skill:
+
 1. Read the source code
 2. Check author reputation and GitHub stars/issues
 3. Run a VirusTotal scan on the package
@@ -193,7 +206,8 @@ For every skill:
 ### 6.4 Keep OpenClaw updated
 
 ```bash
-npm update -g openclaw@latest
+# Run as the openclaw user (npm prefix was set in 5.1)
+npm install -g openclaw@latest
 ```
 
 Subscribe to the OpenClaw security advisories (CVE-2026-25253 showed even localhost-bound instances can be vulnerable without patches).
@@ -213,7 +227,7 @@ Subscribe to the OpenClaw security advisories (CVE-2026-25253 showed even localh
 
 Every incoming message goes through this pipeline:
 
-```
+```text
 Message received
     │
     ├── Plain text? → Categorise directly
@@ -260,12 +274,14 @@ cp -r . ~/.openclaw/skills/youtube-direct/
 ```
 
 **Why youtube-direct over third-party services?**
+
 - ✅ **Privacy**: Direct Google API, no third-party data sharing
 - ✅ **Cost**: Free (10,000 API units/day ≈ 50 transcripts)
 - ✅ **Security**: Single dependency (official googleapis package)
 - ✅ **Control**: Full YouTube API access
 
 **Alternative**: If you prefer simpler setup (5 min vs 15 min) or need cloud/VPS support, use TranscriptAPI:
+
 ```bash
 # Alternative: youtube-full (TranscriptAPI service)
 npx clawhub@latest install youtube-full
@@ -349,7 +365,7 @@ OpenClaw stores memory as Markdown files in `~/.openclaw/memory/`. These are com
 
 Recommended folder structure:
 
-```
+```text
 ~/.openclaw/memory/
 ├── records/
 │   ├── 2026-02-14_work_project-update.md
@@ -423,7 +439,74 @@ The Gmail/Gog skill handles OAuth and token management. During setup:
 
 ## 9. Phase 6 — Operational Maintenance
 
-### 9.1 Backups
+### 9.1 Auto-start on boot (systemd)
+
+Enable OpenClaw to start automatically when the server boots, running as the `openclaw` user without requiring a login session.
+
+**Enable lingering** — allows user-level systemd services to run at boot, even when no one is logged in:
+
+```bash
+sudo loginctl enable-linger openclaw
+```
+
+**Create the systemd user service** as the `openclaw` user:
+
+```bash
+# Switch to the openclaw user
+sudo su - openclaw
+
+# Create the systemd user directory
+mkdir -p ~/.config/systemd/user
+```
+
+**`~/.config/systemd/user/openclaw.service`**:
+
+```ini
+[Unit]
+Description=OpenClaw Second Brain
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=%h/.npm-global/bin/openclaw gateway
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=default.target
+```
+
+> **Note**: `%h` expands to the user's home directory. The path matches the npm prefix configured in section 5.1. Verify with `which openclaw` if yours differs.
+
+**Enable and start the service:**
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable openclaw.service
+systemctl --user start openclaw.service
+```
+
+**Verify:**
+
+```bash
+# Check status
+systemctl --user status openclaw.service
+
+# View logs
+journalctl --user -u openclaw.service -f
+
+# After a reboot, confirm it started automatically
+systemctl --user is-active openclaw.service
+```
+
+**Troubleshooting:**
+
+- If the service fails to start, check the ExecStart path: `which openclaw`
+- If it doesn't survive reboot, verify lingering: `loginctl show-user openclaw | grep Linger` (should say `Linger=yes`)
+- To restart after a config change: `systemctl --user restart openclaw.service`
+
+### 9.2 Backups
 
 ```bash
 # Daily backup of OpenClaw data (add to system crontab)
@@ -432,7 +515,7 @@ The Gmail/Gog skill handles OAuth and token management. During setup:
 
 Verify backups actually work — test a restore periodically.
 
-### 9.2 Disk usage monitoring
+### 9.3 Disk usage monitoring
 
 Transcripts and records will grow over time. Monitor with:
 
@@ -442,7 +525,7 @@ du -sh ~/.openclaw/memory/
 
 Set up alerts if disk usage exceeds 80%.
 
-### 9.3 Log rotation
+### 9.4 Log rotation
 
 Prune old session transcripts:
 
@@ -451,7 +534,7 @@ Prune old session transcripts:
 find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 ```
 
-### 9.4 Health checks
+### 9.5 Health checks
 
 ```bash
 # Add to system crontab — alert if OpenClaw is not running
@@ -474,6 +557,7 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 - [ ] File permissions: 700 on dirs, 600 on sensitive files
 - [ ] Log redaction enabled with custom PII patterns
 - [ ] Automated backups with verified restores
+- [ ] systemd user service enabled for auto-start after reboot
 - [ ] OpenClaw kept up to date (subscribe to security advisories)
 - [ ] All external content treated as untrusted in agent identity
 - [ ] Modern instruction-hardened LLM model selected
@@ -483,7 +567,7 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 ## 11. Summary of Cron Jobs
 
 | Name | Schedule | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `morning-digest` | `0 8 * * *` | Email summary of records from the past 12 hours |
 | `evening-digest` | `0 20 * * *` | Email summary of records from the past 12 hours |
 | `weekly-digest` | `0 9 * * 0` | Comprehensive weekly email digest |
@@ -495,7 +579,7 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 ## 12. Skills Required
 
 | Skill | Purpose | Install Command |
-|---|---|---|
+| --- | --- | --- |
 | `youtube-direct` ⭐ | YouTube transcripts via official Google API (recommended) | See section 7.2 for setup |
 | `youtube-full` | Alternative: YouTube via TranscriptAPI service | `npx clawhub@latest install youtube-full` |
 | `summarize` | Summarise URLs, articles, local files | `npx clawhub@latest install summarize` |
@@ -508,7 +592,7 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 ## 13. Risk Register
 
 | Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Malicious skill (ClawHavoc-type) | Medium | Critical | **✅ MITIGATED**: All skills vetted (see `skills/` directory). youtube-direct built in-house. Container isolation. |
 | Prompt injection via fetched content | Medium | High | Treat all external content as untrusted in identity config |
 | YouTube transcript unavailable (VPS IP block) | Medium (on VPS) | Medium | **✅ ADDRESSED**: Use youtube-direct (official API) for residential IPs; youtube-full (TranscriptAPI) for cloud/VPS |
@@ -524,6 +608,7 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 ## 14. References
 
 ### OpenClaw & Security
+
 - [OpenClaw GitHub Repository](https://github.com/openclaw/openclaw)
 - [OpenClaw Official Documentation — Security](https://docs.openclaw.ai/gateway/security)
 - [OpenClaw Cron Jobs Documentation](https://docs.openclaw.ai/automation/cron-jobs)
@@ -535,6 +620,7 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 - [Skill Security Vetting Guide](./SKILL_VETTING_GUIDE.md) (local)
 
 ### YouTube Skills (Vetted)
+
 - [YouTube Direct Skill](./skills/vetted/youtube-direct/README.md) ⭐ (recommended - local)
 - [YouTube Skills Security Review](./skills/pending-review/YOUTUBE_SKILLS_SECURITY_REVIEW.md) (local)
 - [Skill Comparison Guide](./skills/SKILL_COMPARISON.md) (local)
@@ -542,5 +628,6 @@ find ~/.openclaw/transcripts/ -name "*.md" -mtime +90 -delete
 - [YouTube Data API v3 Documentation](https://developers.google.com/youtube/v3)
 
 ### Email & Automation
+
 - [Email Automation Tutorial](https://openclaw-ai.online/tutorials/use-cases/email-management/)
 - [OpenClaw Cron Deep Dive](https://zenvanriel.nl/ai-engineer-blog/openclaw-cron-jobs-proactive-ai-guide/)

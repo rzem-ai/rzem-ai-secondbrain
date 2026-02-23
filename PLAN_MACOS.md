@@ -8,7 +8,7 @@ This plan describes how to securely install and configure [OpenClaw](https://git
 
 ## 2. Architecture at a Glance
 
-```
+```text
 ┌──────────────────────────┴───────────────────────────────────┐
 │                      Messaging Channels                      │
 │   (WhatsApp / Telegram / Slack / Signal / Discord / etc.)    │
@@ -46,7 +46,7 @@ This plan describes how to securely install and configure [OpenClaw](https://git
 ## 3. Prerequisites
 
 | Requirement | Minimum | Recommended | M3 Macbook Pro 128GB |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | OS | macOS 13 Ventura | macOS 14 Sonoma or later | macOS 15 Sequoia |
 | CPU | Apple M1 | Apple M2/M3 | Apple M3 (ARM64) |
 | RAM | 8 GB | 16 GB | 128 GB (excellent for large transcripts) |
@@ -107,7 +107,7 @@ node --version   # confirm ≥ 22
 npm --version
 ```
 
-**Alternative: Using nvm (Node Version Manager)**
+#### **Alternative: Using nvm (Node Version Manager)**
 
 ```bash
 # Install nvm
@@ -369,7 +369,7 @@ For every skill:
 
 ### 6.3 Secret management
 
-**Option 1: macOS Keychain (Native)**
+#### **Option 1: macOS Keychain (Native)**
 
 ```bash
 # Store API key in Keychain
@@ -379,14 +379,14 @@ security add-generic-password -a "$USER" -s "openclaw-api-key" -w "your-api-key-
 security find-generic-password -a "$USER" -s "openclaw-api-key" -w
 ```
 
-**Option 2: Pass (Unix Password Manager)**
+#### **Option 2: Pass (Unix Password Manager)**
 
 ```bash
 brew install pass
 # Follow pass initialization and GPG setup
 ```
 
-**Option 3: 1Password CLI**
+#### **Option 3: 1Password CLI**
 
 ```bash
 brew install 1password-cli
@@ -429,7 +429,7 @@ Subscribe to the OpenClaw security advisories (CVE-2026-25253 showed even localh
 
 Every incoming message goes through this pipeline:
 
-```
+```text
 Message received
     │
     ├── Plain text? → Categorise directly
@@ -476,12 +476,14 @@ cp -r . ~/.openclaw/skills/youtube-direct/
 ```
 
 **Why youtube-direct over third-party services?**
+
 - ✅ **Privacy**: Direct Google API, no third-party data sharing
 - ✅ **Cost**: Free (10,000 API units/day ≈ 50 transcripts)
 - ✅ **Security**: Single dependency (official googleapis package)
 - ✅ **Control**: Full YouTube API access
 
 **Alternative**: If you prefer simpler setup (5 min vs 15 min) or need cloud/VPS support, use TranscriptAPI:
+
 ```bash
 # Alternative: youtube-full (TranscriptAPI service)
 npx clawhub@latest install youtube-full
@@ -563,7 +565,7 @@ OpenClaw stores memory as Markdown files in `~/.openclaw/memory/`. These are com
 
 Recommended folder structure:
 
-```
+```text
 ~/.openclaw/memory/
 ├── records/
 │   ├── 2026-02-15_work_project-update.md
@@ -638,9 +640,9 @@ The Gmail/Gog skill handles OAuth and token management. During setup:
 
 OpenClaw cron runs within the OpenClaw process. If your Mac sleeps or the process stops, cron jobs won't run.
 
-**Options for ensuring cron reliability:**
+#### **Options for ensuring cron reliability:**
 
-**Option 1: Keep OpenClaw running as a LaunchAgent**
+##### **Option 1: Keep OpenClaw running as a LaunchAgent**
 
 Create `~/Library/LaunchAgents/com.openclaw.agent.plist`:
 
@@ -678,11 +680,11 @@ launchctl start com.openclaw.agent
 launchctl list | grep openclaw
 ```
 
-**Option 2: Run in container with restart policy**
+##### **Option 2: Run in container with restart policy**
 
 If using Docker/OrbStack, the `--restart unless-stopped` flag will restart OpenClaw after Mac reboots.
 
-**Option 3: Prevent Mac from sleeping**
+##### **Option 3: Prevent Mac from sleeping**
 
 ```bash
 # Install Amphetamine from Mac App Store (free)
@@ -840,7 +842,7 @@ docker ps --filter "name=openclaw" --format "{{.Status}}"
 ## 11. Summary of Cron Jobs
 
 | Name | Schedule | Purpose | macOS Consideration |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `morning-digest` | `0 8 * * *` | Email summary of records from the past 12 hours | Requires OpenClaw running; use LaunchAgent |
 | `evening-digest` | `0 20 * * *` | Email summary of records from the past 12 hours | Requires OpenClaw running; use LaunchAgent |
 | `weekly-digest` | `0 9 * * 0` | Comprehensive weekly email digest | Requires OpenClaw running; use LaunchAgent |
@@ -852,7 +854,7 @@ docker ps --filter "name=openclaw" --format "{{.Status}}"
 ## 12. Skills Required
 
 | Skill | Purpose | Install Command |
-|---|---|---|
+| --- | --- | --- |
 | `youtube-direct` ⭐ | YouTube transcripts via official Google API (recommended) | See section 7.2 for setup |
 | `youtube-full` | Alternative: YouTube via TranscriptAPI service | `npx clawhub@latest install youtube-full` |
 | `summarize` | Summarise URLs, articles, local files | `npx clawhub@latest install summarize` |
@@ -865,7 +867,7 @@ docker ps --filter "name=openclaw" --format "{{.Status}}"
 ## 13. Risk Register (M3 Macbook Specific)
 
 | Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Malicious skill (ClawHavoc-type) | Medium | Critical | Vet all skills; prefer official ones; container isolation |
 | Prompt injection via fetched content | Medium | High | Treat all external content as untrusted in identity config |
 | Mac sleeps during cron job | High | Medium | Use LaunchAgent with KeepAlive; caffeinate; or prevent auto-sleep |
@@ -950,6 +952,7 @@ brew install --cask swiftbar
 ## 15. References
 
 ### OpenClaw & Security
+
 - [OpenClaw GitHub Repository](https://github.com/openclaw/openclaw)
 - [OpenClaw Official Documentation — Security](https://docs.openclaw.ai/gateway/security)
 - [OpenClaw Cron Jobs Documentation](https://docs.openclaw.ai/automation/cron-jobs)
@@ -957,6 +960,7 @@ brew install --cask swiftbar
 - [Skill Security Vetting Guide](./SKILL_VETTING_GUIDE.md) (local)
 
 ### YouTube Skills
+
 - [YouTube Direct Skill](./skills/vetted/youtube-direct/README.md) (recommended - local)
 - [YouTube Skills Security Review](./skills/pending-review/YOUTUBE_SKILLS_SECURITY_REVIEW.md) (local)
 - [Skill Comparison Guide](./skills/SKILL_COMPARISON.md) (local)
@@ -964,6 +968,7 @@ brew install --cask swiftbar
 - [YouTube Data API v3 Documentation](https://developers.google.com/youtube/v3)
 
 ### macOS & Deployment
+
 - [Homebrew Official Site](https://brew.sh)
 - [OrbStack Documentation](https://docs.orbstack.dev)
 - [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
@@ -971,6 +976,7 @@ brew install --cask swiftbar
 - [macOS LaunchAgent Documentation](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
 
 ### Email & Automation
+
 - [Email Automation Tutorial](https://openclaw-ai.online/tutorials/use-cases/email-management/)
 - [OpenClaw Cron Deep Dive](https://zenvanriel.nl/ai-engineer-blog/openclaw-cron-jobs-proactive-ai-guide/)
 
